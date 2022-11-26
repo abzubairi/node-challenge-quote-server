@@ -4,6 +4,7 @@ const { response } = require("express");
 
 //load the 'express' module which makes writing webservers easy
 const express = require("express");
+const lodash = require("lodash");
 const app = express();
 
 //load the quotes JSON
@@ -12,7 +13,7 @@ const quotes = require("./quotes.json");
 // Now register handlers for some routes:
 //   /                  - Return some helpful welcome info (text)
 //   /quotes            - Should return all quotes (json)
-//   /quotes/random     - Should return ONE quote (json)
+//   /quotes/random     - Should return ONE obj (json)
 app.get("/", function (request, response) {
   response.send("Neill's Quote Server!  Ask me for /quotes/random, or /quotes");
 });
@@ -30,7 +31,19 @@ app.get("/quotes", function (request, response) {
 });
 
 app.get("/quotes/random", function (request, response) {
-  response.send(pickFromArray(quotes));
+  response.send(lodash.sample(quotes));
+});
+app.get("/quotes/search", function (request, response) {
+  const termParam = request.query.term.toLowerCase();
+  //filter quotes based on term
+  const result = quotes.filter(function (obj) {
+    return (
+      obj.quote.toLowerCase().includes(termParam) ||
+      obj.author.toLowerCase().includes(termParam)
+    );
+  });
+
+  response.send(result);
 });
 
 function pickFromArray(quotes) {
